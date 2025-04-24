@@ -1,0 +1,469 @@
+---
+title: ' R_Project'
+author: "Gopi Boppana"
+date: "2023-12-10"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r}
+# Load dataset and set working directory
+setwd("~/Downloads")  # Set the working directory to where the CSV file is stored
+data <- read.csv("HR-Employee-Attrition.csv") # Read the CSV file into a data frame
+```
+
+```{r}
+# Remove unnecessary columns
+columns_to_remove <- c("DailyRate","EmployeeNumber", "HourlyRate", "MonthlyRate", "StandardHours", "StockOptionLevel", "EmployeeCount") 
+
+data <- data[, !(names(data) %in% columns_to_remove)] # Drop the unnecessary columns
+```
+
+
+```{r}
+# View the first few rows of the dataset
+head(data)
+
+# Get summary statistics for each column
+summary(data)
+```
+
+```{r}
+# Returns the number of rows and columns
+dim(data)
+
+# Provides the structure of the dataset including data types
+str(data)
+```
+
+```{r}
+# Check for Null values in the entire data frame
+if (any(is.na(data))) {
+  print("There are NA values in the data frame.")
+} else {
+  print("There are no NA values in the data frame.")
+}
+
+```
+
+```{r}
+# Check for duplicate records
+any(duplicated(data))
+```
+
+```{r}
+# Check for outliers in 'Age' column using IQR method
+variable <- data$Age
+Q1 <- quantile(variable, 0.25) # First quartile (25th percentile)
+Q3 <- quantile(variable, 0.75) # Third quartile (75th percentile)
+IQR <- Q3 - Q1
+
+# Identify potential outliers
+potential_outliers <- variable < (Q1 - 1.5 * IQR) | variable > (Q3 + 1.5 * IQR)
+
+# Print the result
+print(any(potential_outliers))
+```
+
+```{r}
+# Function to detect outliers using IQR method
+detect_outliers <- function(variable) {
+  Q1 <- quantile(variable, 0.25)
+  Q3 <- quantile(variable, 0.75)
+  IQR <- Q3 - Q1
+  
+  # Identify potential outliers
+  potential_outliers <- variable < (Q1 - 1.5 * IQR) | variable > (Q3 + 1.5 * IQR)
+  
+  return(potential_outliers)
+}
+
+# Columns to check for outliers
+columns_to_check <- c(
+  "DistanceFromHome",
+  "MonthlyIncome",
+  "NumCompaniesWorked",
+  "PercentSalaryHike",
+  "TotalWorkingYears",
+  "YearsAtCompany",
+  "YearsInCurrentRole",
+  "YearsSinceLastPromotion",
+  "YearsWithCurrManager"
+)
+
+# Check for outliers in each column
+for (col in columns_to_check) {
+  variable <- data[[col]]
+  outliers <- detect_outliers(variable)
+  print(paste("Outliers in", col, ":", any(outliers)))
+}
+```
+
+```{r}
+# Boxplots before outlier treatment
+boxplot(data$MonthlyIncome, main = "MonthlyIncome", col = "lightblue", border = "black", notch = FALSE)
+boxplot(data$NumCompaniesWorked, main = "NumCompaniesWorked", col = "lightblue", border = "black", notch = FALSE)
+boxplot(data$TotalWorkingYears, main = "TotalWorkingYears", col = "lightblue", border = "black", notch = FALSE)
+boxplot(data$YearsAtCompany, main = "YearsAtCompany", col = "lightblue", border = "black", notch = FALSE)
+boxplot(data$YearsInCurrentRole, main = "YearsInCurrentRole", col = "lightblue", border = "black", notch = FALSE)
+boxplot(data$YearsSinceLastPromotion, main = "YearsSinceLastPromotion", col = "lightblue", border = "black", notch = FALSE)
+boxplot(data$YearsWithCurrManager, main = "YearsWithCurrManager", col = "lightblue", border = "black", notch = FALSE)
+```
+
+```{r}
+# Function to clip (cap) outliers based on IQR method
+clip_outliers <- function(variable) {
+  Q1 <- quantile(variable, 0.25)
+  Q3 <- quantile(variable, 0.75)
+  IQR <- Q3 - Q1
+  
+  # Set the clipping threshold
+  threshold <- 1.5
+  
+  # Clip (cap) values beyond the threshold
+  variable[variable < (Q1 - threshold * IQR)] <- (Q1 - threshold * IQR)
+  variable[variable > (Q3 + threshold * IQR)] <- (Q3 + threshold * IQR)
+  
+  return(variable)
+}
+
+# Columns to clip (cap) outliers
+columns_to_clip <- c(
+  "DistanceFromHome",
+  "MonthlyIncome",
+  "NumCompaniesWorked",
+  "PercentSalaryHike",
+  "TotalWorkingYears",
+  "YearsAtCompany",
+  "YearsInCurrentRole",
+  "YearsSinceLastPromotion",
+  "YearsWithCurrManager"
+)
+
+# Clip (cap) outliers in each column
+for (col in columns_to_clip) {
+  variable <- data[[col]]
+  data[[col]] <- clip_outliers(variable)
+}
+```
+
+```{r}
+# Boxplots after outlier treatment
+boxplot(data$MonthlyIncome, main = "MonthlyIncome", col = "lightblue", border = "black", notch = FALSE)
+boxplot(data$NumCompaniesWorked, main = "NumCompaniesWorked", col = "lightblue", border = "black", notch = FALSE)
+boxplot(data$TotalWorkingYears, main = "TotalWorkingYears", col = "lightblue", border = "black", notch = FALSE)
+boxplot(data$YearsAtCompany, main = "YearsAtCompany", col = "lightblue", border = "black", notch = FALSE)
+boxplot(data$YearsInCurrentRole, main = "YearsInCurrentRole", col = "lightblue", border = "black", notch = FALSE)
+boxplot(data$YearsSinceLastPromotion, main = "YearsSinceLastPromotion", col = "lightblue", border = "black", notch = FALSE)
+boxplot(data$YearsWithCurrManager, main = "YearsWithCurrManager", col = "lightblue", border = "black", notch = FALSE)
+```
+
+```{r}
+# Summary of dataset
+summary(data)
+```
+
+```{r}
+# Histograms for selected columns
+hist(data$Age)
+hist(data$DistanceFromHome)
+hist(data$MonthlyIncome)
+hist(data$NumCompaniesWorked)
+hist(data$PercentSalaryHike)
+hist(data$TotalWorkingYears)
+hist(data$YearsAtCompany)
+hist(data$YearsInCurrentRole)
+hist(data$YearsSinceLastPromotion)
+hist(data$YearsWithCurrManager)
+```
+
+```{r}
+# Histogram
+hist(data$MonthlyIncome, main="Monthly Income", col="lightblue", border="black")
+
+# Q-Q Plot
+qqnorm(data$MonthlyIncome)
+qqline(data$MonthlyIncome, col = 2)
+
+# Shapiro-Wilk Test for Normality
+shapiro.test(data$MonthlyIncome)
+
+```
+```{r}
+#columns_to_remove <- c("Over18")
+
+#data <- data[, !(names(data) %in% columns_to_remove)]
+```
+
+
+
+```{r}
+columns_to_transform <- c(
+  "DistanceFromHome",
+  "MonthlyIncome",
+  "NumCompaniesWorked",
+  "PercentSalaryHike",
+  "TotalWorkingYears",
+  "YearsAtCompany",
+  "YearsInCurrentRole",
+  "YearsSinceLastPromotion",
+  "YearsWithCurrManager"
+)
+
+for (col in columns_to_transform) {
+  data[[col]] <- ifelse(data[[col]] > 0, log(data[[col]] + 1), 0)
+}
+
+par(mfrow = c(3, 3))
+for (col in columns_to_transform) {
+  hist(data[[col]], main = col, col = "lightblue", border = "black")
+}
+```
+
+```{r}
+# Correlation matrix
+numeric_data <- data[, sapply(data, is.numeric)]
+
+# Calculate the correlation matrix
+correlation_matrix <- cor(numeric_data)
+
+# Print the correlation matrix
+print(correlation_matrix)
+
+par(mar = c(5, 5, 2, 2))  # Adjust the margins
+heatmap(correlation_matrix, 
+        col = colorRampPalette(c("blue", "white", "red"))(20),
+        main = "Correlation Heatmap",
+        cexRow = 1.5, cexCol = 1.5,  # Adjust label size
+        margins = c(10, 10))  # Adjust margins in the heatmap
+```
+
+```{r}
+# Fisher's Exact Test for categorical associations
+your_data <- lapply(data, as.factor)
+your_data <- as.data.frame(your_data)
+
+
+variable_pairs <- combn(names(your_data), 2, simplify = TRUE)
+
+associations <- list()
+
+# Perform Fisher's Exact Test for each pair
+for (i in seq(ncol(variable_pairs))) {
+  # Create contingency table
+  contingency_table <- table(your_data[, variable_pairs[1, i]], your_data[, variable_pairs[2, i]])
+  
+ 
+  if (all(dim(contingency_table) >= 2)) {
+    test_result <- fisher.test(contingency_table, simulate.p.value = TRUE)
+    
+    # Check if the p-value is below a significance threshold (e.g., 0.05)
+    if (test_result$p.value < 0.05) {
+      associations[[paste(variable_pairs[1, i], variable_pairs[2, i], sep = "_")]] <- test_result
+    }
+  } else {
+    cat("Insufficient data for Fisher's Exact Test for", variable_pairs[1, i], "and", variable_pairs[2, i], "\n")
+  }
+}
+
+# Print the list of associations
+cat("List of associations:\n")
+print(associations)
+```
+
+
+
+```{r}
+# Linear regression
+model = lm(MonthlyIncome ~ Age + Attrition + BusinessTravel + Department + DistanceFromHome + Education + EducationField + EnvironmentSatisfaction + Gender + JobInvolvement + JobLevel + JobRole + JobSatisfaction + MaritalStatus + NumCompaniesWorked + OverTime + PercentSalaryHike + PerformanceRating + RelationshipSatisfaction + TotalWorkingYears + TrainingTimesLastYear + WorkLifeBalance + YearsAtCompany + YearsInCurrentRole + YearsSinceLastPromotion + YearsWithCurrManager, data = data)
+
+summary(model)
+```
+
+
+```{r}
+
+model1 = lm(MonthlyIncome ~ JobLevel + JobRole, data = data)
+
+summary(model1)
+```
+
+```{r}
+#ANOVA 
+summary(aov(MonthlyIncome ~ JobRole , data = data))
+```
+
+
+```{r}
+# Pairwise t test
+pairwise.t.test(data$MonthlyIncome, data$JobRole, p.adj = "none")
+```
+
+
+```{r}
+# Encoding categorical variable:
+
+encoded_data <- cbind(data, model.matrix(~ JobRole - 1, data = data))
+
+encoded_data <- encoded_data[, -which(names(encoded_data) %in% c("JobRole"))]
+
+colnames(encoded_data)[colnames(encoded_data) == "JobRoleHuman Resources"] <- "JobRoleHumanResources"
+colnames(encoded_data)[colnames(encoded_data) == "JobRoleLaboratory Technician"] <- "JobRoleLaboratoryTechnician"
+colnames(encoded_data)[colnames(encoded_data) == "JobRoleManufacturing Director"] <- "JobRoleManufacturingDirector"
+colnames(encoded_data)[colnames(encoded_data) == "JobRoleResearch Scientist"] <- "JobRoleResearchScientist"
+colnames(encoded_data)[colnames(encoded_data) == "JobRoleSales Executive"] <- "JobRoleSalesExecutive"
+colnames(encoded_data)[colnames(encoded_data) == "JobRoleSales Representative"] <- "JobRoleSalesRepresentative"
+colnames(encoded_data)[colnames(encoded_data) == "JobRoleResearch Director"] <- "JobRoleResearchDirector"
+
+```
+
+```{r}
+# Final regression model with encoded job roles
+model1 = lm(MonthlyIncome ~ JobLevel + JobRoleHumanResources + JobRoleLaboratoryTechnician +  JobRoleResearchScientist  + JobRoleSalesRepresentative , data = encoded_data)
+
+summary(model1)
+```
+
+```{r}
+# Residual plots
+residuals <- residuals(model1)
+
+hist(residuals, main = "Histogram of Residuals with Normal Distribution Curve", col = "lightblue", border = "black", xlab = "Residuals", prob = TRUE)
+
+
+mu <- mean(residuals)
+sigma <- sd(residuals)
+x <- seq(min(residuals), max(residuals), length = 100)
+lines(x, dnorm(x, mean = mu, sd = sigma), col = "red", lwd = 2)
+
+qqnorm(residuals, main = "Normal Probability Plot of Residuals", col = "blue", pch = 20)
+qqline(residuals, col = "red")
+```
+
+```{r}
+#residual plot
+plot(resid(model1) ~ fitted(model1),
+     xlab = "Predicted Monthly Income",  ylab = "Residual",
+     main = "Residual Plot for Final Model",
+     pch = 21, cex = 0.8)
+abline(h = 0, lty = 2)
+```
+
+```{r}
+# Interaction model
+model2 = lm(MonthlyIncome ~ JobLevel + JobRole + JobLevel*JobRole, data = data)
+
+summary(model2)
+```
+
+
+```{r}
+# Attrition balancing
+minority_indices <- which(data$Attrition == "Yes")
+table(data$Attrition)
+```
+
+```{r}
+# Over sampling
+minority_indices <- which(data$Attrition == "Yes")
+
+data_oversampled <- data
+oversampled_indices <- sample(minority_indices, replace = TRUE, size = length(setdiff(1:nrow(data), minority_indices)))
+data_oversampled <- rbind(data_oversampled, data[oversampled_indices, ])
+
+table(data_oversampled$Attrition)
+```
+
+```{r}
+data_oversampled$Attrition <- as.factor(data_oversampled$Attrition)
+```
+
+
+```{r}
+# Convert multiple columns to factors and check structure
+factor_columns <- c("BusinessTravel", "Department", "Education", "Gender", 
+                    "JobInvolvement", "JobLevel", "JobRole", "JobSatisfaction", 
+                    "MaritalStatus", "NumCompaniesWorked", "OverTime")
+
+for (col in factor_columns) {
+  data[[col]] <- as.factor(data[[col]])
+  cat("\nStructure of", col, ":\n")
+  str(data[[col]])
+}
+
+# Display the first few rows of the dataset
+cat("\nHead of the data:\n")
+head(data)
+```
+
+
+
+```{r}
+# Logistic regression model
+model <- glm(Attrition ~ Age + MonthlyIncome + BusinessTravel + Department + 
+              DistanceFromHome + Education + EducationField + EnvironmentSatisfaction + 
+              Gender + JobInvolvement + JobLevel + JobRole + JobSatisfaction + 
+              MaritalStatus + NumCompaniesWorked + OverTime + PercentSalaryHike + 
+              PerformanceRating + RelationshipSatisfaction + TotalWorkingYears + 
+              TrainingTimesLastYear + WorkLifeBalance + YearsAtCompany + 
+              YearsInCurrentRole + YearsSinceLastPromotion + YearsWithCurrManager, 
+              data = data_oversampled, family = binomial(link = "logit"))
+
+summary(model)
+```
+
+
+
+```{r}
+# Ordinary Least Square Regression
+
+#install.packages("ordinal")
+library(ordinal)
+
+data$PerformanceRating <- ordered(data$PerformanceRating)
+
+
+model3 <- clm(PerformanceRating ~ JobSatisfaction + EnvironmentSatisfaction + RelationshipSatisfaction + 
+                WorkLifeBalance, data = data)
+
+summary(model3)
+```
+
+```{r}
+
+model4 <- clm(PerformanceRating ~ JobSatisfaction + EnvironmentSatisfaction + RelationshipSatisfaction + WorkLifeBalance + JobInvolvement + DistanceFromHome + TotalWorkingYears + Education + JobLevel + NumCompaniesWorked +  TotalWorkingYears + TrainingTimesLastYear + WorkLifeBalance + YearsAtCompany + YearsInCurrentRole + YearsSinceLastPromotion + YearsWithCurrManager , data = data)
+
+summary(model4)
+```
+
+```{r}
+model4 <- clm(PerformanceRating ~ JobLevel + JobInvolvement + JobInvolvement*JobLevel, data = data)
+
+# Display summary of the model
+summary(model4)
+```
+
+```{r}
+response_variable <- data$PerformanceRating
+
+# Check if it is a factor
+if (is.factor(response_variable)) {
+  print("Response variable is a factor.")
+} else {
+  print("Response variable is not a factor.")
+}
+
+```
+
+```{r}
+data$PerformanceRating <- as.factor(data$PerformanceRating)
+
+```
+
+```{r}
+table(data$PercentSalaryHike, data$PerformanceRating)
+
+```
+
+
