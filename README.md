@@ -111,7 +111,7 @@ These research questions guide the development of statistical models, ensuring w
 
 ## 🤝 Next Steps & Collaboration
 
-Feel free to reach out via via [email](mailto:gopikrishnaboppana9598@gmail.com) if you have any ideas to incorporate, suggestions for improvement, or if you'd like access to the RMD files featuring advanced machine learning models or interactive dashboards. I'm more than happy to share! 😊
+Feel free to reach out via [email](mailto:gopikrishnaboppana9598@gmail.com) if you have any ideas to incorporate, suggestions for improvement, or if you'd like access to the RMD files featuring advanced machine learning models or interactive dashboards. I'm more than happy to share! 😊
 
 Let’s collaborate and make this project even better! 💡✨
 
